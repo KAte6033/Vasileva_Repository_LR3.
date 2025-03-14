@@ -29,6 +29,9 @@ int control2(int min_control= -infinity, int max_control=infinity, string msg = 
 };
 
 int InputQ (){
+    int q;
+    cout << "Введите Q: " << endl;
+    cin >> q;
 
 }
 
