@@ -9,98 +9,113 @@
 #include <set>
 #include <cstring>
 #include <typeinfo>
+#include <functional>
+#include <map>
 using namespace std;
 
 const int infinity = std::numeric_limits<int>::max();
 
-int control2(int min_control= -infinity, int max_control=infinity, string msg = "")
+struct MenuItem
 {
-    //Vasileva Ekaterina
-    int x = 0;
-    cout << msg;
-    while(!(cin >> x) || (cin.peek() != '\n')  || x <= min_control || x >= max_control){
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(),'\n');
-        cout<<"Вы ввели некорректные данные." << endl;
-        cout << msg;
-    }
-    return x;
-
+    string title; // название пункта меню
+    function <void()> action; // действие, выполняемое при выборе пункта
 };
 
-int InputQ (){
-    int q;
-    cout << "Введите Q: " << endl;
-    cin >> q;
+bool UserInput (string input){
+    // если строка пустая, то ввод некорректен
+    if(input.empty()) return false;
+
+    // попытка
+    try {
+        // преобразование введённого значения  в тип int 
+        int number  = stoi(input);
+    }
+
+    catch (...) // если возникла ошибка в блоке try
+    {return false;}
+    return true;
 
 }
 
-unsigned int IntputP (){
+function <void()> EnterNumber (int& varlink, string label){
+    return [&varlink, label](){
+        string raw_input;
+        cout << label << " = ";
+        getline(cin, raw_input);
 
+        while (!UserInput(raw_input)){
+            cout << label << " = ";
+            getline(cin, raw_input);
+        }
+        varlink = stoi(raw_input);
+    };
 }
 
-int modQonP (){
+int q, p;
 
+void InputQ (){
+    EnterNumber (q, "Введите Q: ")();
+    cout << "Q: " << q << endl;
+ 
 }
 
-int divQonP (){
+void IntputP (){
+    EnterNumber (p, "Введите P: ")();
+    cout << "P: " << p << endl;
+}
+
+void modQonP (){
+    int mod;
+    mod = q % p;
+    cout << "Остаток от деления " << q << " на " << p << " = " << mod << endl;
+}
+
+void divQonP (){
+    int div;
+    div = q / p;
+    cout << "Целая часть от деления " << q << " на " << p << " = " << div << endl;
 
 }
 
 
 int main() {
+    map<int, MenuItem> menu = {
+        {1, {"Ввести целое число Q", InputQ} },
+        {2, {"Ввести натуральное число P (меньше Q)", IntputP}},
+        {3, {"Найти остаток от деления Q на P", modQonP}},
+        {4, {"Найти целую часть от деления Q на P", divQonP}}
+    };
 
-    setlocale(LC_ALL, "Russian");
+    int choice = 0;
 
-    int min_control = -1;
-    int max_control = 5;
-
-    int funcSelect = 0;
-    for(;;)
+    while (true)
     {
-        cout << "\nВвести целое число Q";
-        cout << "\nВвести натуральное число P (меньше Q)";
-        cout << "\nНайти остаток от деления Q на P"; 
-        cout << "\nНайти целую часть от деления Q на P";
-        funcSelect = control2(min_control, max_control, "\nВведите номер задания, которое вы бы хотели решить, или 0, если хотите закончить: ");
-        cin.ignore();
+        cout << "Меню:" << endl;
 
-
-        switch (funcSelect)
-
-        {
-
-        case 0:
-            return 0;
-            break;
-
-        case 1:
-        {
-            InputQ();
-            break;
-        }
-
-        case 2:
-        {
-            IntputP();
-            break;
-        }
-
-        case 3:
-        {
-            modQonP();
-            break;
-        } 
-
-        case 4: 
-        {
-            divQonP();
-            break;
-        }
-
+        for (const auto& item : menu){
+            cout << "Task " << item.first << ". " << item.second.title << endl;
 
         }
 
+        cout << "0. Выход" << endl; 
+
+        EnterNumber (choice, "Введите номер пункта: ")();
+
+        if (choice == 0){
+            cout << "@ 2025 Ekaterina Vasileva" << endl;
+            break;
+        }
+
+        cout << endl;
+
+        if (menu.find(choice) != menu.end()) {
+            menu[choice].action();
+        }
+        else{
+            cout << "Некорректный ввод. ";
+        }
+
+        cout << endl << endl;
 
     }
     return 0; 
